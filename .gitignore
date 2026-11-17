@@ -1,0 +1,12 @@
+# never commit tokens
+.env
+*.env
+# dependencies / venvs
+node_modules/
+.venv/
+__pycache__/
+# example outputs
+*.json.out
+audit.json
+screenshots/
+out/

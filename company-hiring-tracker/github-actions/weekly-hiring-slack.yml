@@ -1,0 +1,65 @@
+# Copy to .github/workflows/hiring-watch.yml in YOUR repository.
+# Every Monday: new / reopened jobs at the companies in COMPANIES are posted to a Slack channel.
+#
+# Repository secrets needed:
+#   APIFY_TOKEN        your Apify API token
+#   SLACK_WEBHOOK_URL  a Slack Incoming Webhook URL (https://api.slack.com/messaging/webhooks)
+#
+# Cost: $0.004 per covered company + $0.001 per returned job. The first run (no baseline yet for the stateKey)
+# returns every matching open job; later runs return only changes. Capped at $1 per run below.
+name: Weekly hiring watch
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"   # Monday 07:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  hiring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      COMPANIES: '["stripe.com", "doctolib.fr", "https://boards.greenhouse.io/airbnb"]'
+    steps:
+      - name: Fetch changes since last week
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: |
+          jq -n --argjson companies "$COMPANIES" '{
+              companies: $companies,
+              mode: "changes",
+              stateKey: "github-weekly",
+              titleInclude: ["engineer", "sales"],
+              maxJobsPerCompany: 50
+            }' > input.json
+          curl -sS --fail-with-body -X POST \
+            "https://api.apify.com/v2/acts/neocraft~company-hiring-tracker/run-sync-get-dataset-items?maxTotalChargeUsd=1" \
+            -H "Authorization: Bearer ${APIFY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @input.json > hiring.json
+          echo "rows: $(jq length hiring.json)"
+
+      - name: Post to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          NEW=$(jq '[.[] | select(.type == "job" and (.changeType == "new" or .changeType == "reopened"))] | length' hiring.json)
+          if [ "$NEW" -eq 0 ]; then echo "No new jobs this week"; exit 0; fi
+          jq '{
+              text: ([
+                "*Hiring watch: \([.[] | select(.type == "job" and (.changeType == "new" or .changeType == "reopened"))] | length) new or reopened jobs*",
+                ([.[] | select(.type == "job" and (.changeType == "new" or .changeType == "reopened"))][:30][]
+                  | "• \(.company): <\(.url)|\(.title)> (\(.locations // "location n/a"))\(if .changeType == "reopened" then " - reopened" else "" end)"),
+                ([.[] | select(.type == "company" and .summary != null)][] | "_\(.summary)_")
+              ] | flatten | join("\n"))
+            }' hiring.json > slack.json
+          curl -sS --fail -X POST -H "Content-Type: application/json" --data @slack.json "$SLACK_WEBHOOK_URL"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hiring-changes
+          path: hiring.json
+          retention-days: 30

@@ -1,0 +1,62 @@
+# Copy to .github/workflows/competitor-pricing.yml in YOUR repository.
+# Every Monday: full-page screenshots of competitors' pricing pages, stored as a workflow artifact (90 days).
+#
+# Repository secret needed: APIFY_TOKEN.
+# Cost: $0.008 per capture -> 5 pages x 1 device x ~4.3 weeks = about $0.17 / month.
+name: Competitor pricing screenshots
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"   # Monday 07:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Capture pricing pages
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: |
+          cat > input.json <<'EOF'
+          {
+            "urls": [
+              "https://competitor-a.example/pricing",
+              "https://competitor-b.example/pricing"
+            ],
+            "devices": ["desktop"],
+            "captureMode": "fullPage",
+            "format": "png",
+            "cookieBanners": "hide",
+            "blockAds": true,
+            "waitUntil": "networkidle"
+          }
+          EOF
+          curl -sS --fail-with-body -X POST \
+            "https://api.apify.com/v2/acts/neocraft~website-screenshot-pro/run-sync-get-dataset-items?maxTotalChargeUsd=0.2" \
+            -H "Authorization: Bearer ${APIFY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @input.json > results.json
+
+      - name: Download the images
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          mkdir -p "pricing/$DAY"
+          jq -r '.[] | select(.status == "ok") | [.screenshotUrl, .screenshotKey] | @tsv' results.json |
+            while IFS=$'\t' read -r url key; do
+              curl -sS --fail -o "pricing/$DAY/$key" "$url"
+            done
+          echo "### Pricing captures $DAY" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | "- \(.url): \(.status)\(if .status != "ok" then " (\(.errorCode))" else "" end)"' results.json >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pricing-screenshots
+          path: |
+            pricing/
+            results.json
+          retention-days: 90
