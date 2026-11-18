@@ -12,6 +12,20 @@ Runnable examples (Python, Node.js, curl, GitHub Actions, AI agents / MCP) for t
 Prices are those listed on the Apify Store pages at the time of writing; the Store page is the reference.
 All three Actors accept a *maximum total charge* per run, and every example here sets one.
 
+## Ready-made GitHub Actions
+
+Prefer a one-line `uses:` step to copying a workflow? Each Actor also has its own GitHub Action (bash + curl + jq, no
+dependencies, hard spend cap on every run, results as JSON + job summary + step outputs). Runs are billed to your own
+Apify account (pay per event, same prices as above).
+
+| Action | Use it for | Actor |
+|---|---|---|
+| [`Neocraft-tools/website-audit-action@v1`](https://github.com/Neocraft-tools/website-audit-action) | Audit on deploy; fail on low score, critical issues or score drop | [website-audit-all-in-one](https://apify.com/neocraft/website-audit-all-in-one) |
+| [`Neocraft-tools/page-change-monitor-action@v1`](https://github.com/Neocraft-tools/page-change-monitor-action) | Scheduled page checks; diff output, fail/notify on change | [page-change-monitor](https://apify.com/neocraft/page-change-monitor) |
+| [`Neocraft-tools/website-screenshot-action@v1`](https://github.com/Neocraft-tools/website-screenshot-action) | Screenshots/PDFs of preview deploys, uploaded as an artifact | [website-screenshot-pro](https://apify.com/neocraft/website-screenshot-pro) |
+| [`Neocraft-tools/company-profile-action@v1`](https://github.com/Neocraft-tools/company-profile-action) | Official registry profiles (FR, UK, US SEC, LEI) from names, domains or IDs | [official-company-profile](https://apify.com/neocraft/official-company-profile) |
+| [`Neocraft-tools/hiring-tracker-action@v1`](https://github.com/Neocraft-tools/hiring-tracker-action) | New / closed jobs of a company watchlist since the last run | [company-hiring-tracker](https://apify.com/neocraft/company-hiring-tracker) |
+
 ## Repository layout
 
 ```

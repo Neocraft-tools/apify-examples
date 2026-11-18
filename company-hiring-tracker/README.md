@@ -34,3 +34,7 @@ account). The first run with a new `stateKey` has no baseline and returns the fu
 
 Rows have a `type`: `job`, `company` (summary and trends) or `coverage` (free, one per requested company).
 Trend fields (`netChange7d`, ...) stay `null` until enough history is collected (history started 15 November 2026).
+
+## GitHub Action
+
+The same call is packaged as a reusable action: [`Neocraft-tools/hiring-tracker-action@v1`](https://github.com/Neocraft-tools/hiring-tracker-action).

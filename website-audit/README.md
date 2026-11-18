@@ -34,3 +34,7 @@ The HTML report is stored as `OUTPUT` (and `OUTPUT.pdf` when `"pdf": true`) in t
 `language` (`en` / `fr`), `pageRecords`, `pagespeed` (set `false` for a faster and more stable CI gate),
 `renderJs` (`auto` / `always` / `never`), `pdf`, `monitorId` (separate history per project),
 `alerts` (Slack / webhook, secret input). See the full list on the Actor's **Input** tab.
+
+## GitHub Action
+
+The same call is packaged as a reusable action: [`Neocraft-tools/website-audit-action@v1`](https://github.com/Neocraft-tools/website-audit-action).

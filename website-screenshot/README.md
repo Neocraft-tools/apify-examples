@@ -26,3 +26,7 @@ plan's data-retention period, so download what you want to keep.
 `captureMode` (`fullPage` / `viewport` / `element` / `clip`), `elementSelector`, `maxHeight`, `waitUntil`,
 `delayMs`, `waitForSelector`, `cookieBanners` (`hide` / `reject` / `accept` / `none`), `blockAds`,
 `hideSelectors`, `colorScheme`, `locale`. Full list on the Actor's **Input** tab.
+
+## GitHub Action
+
+The same call is packaged as a reusable action: [`Neocraft-tools/website-screenshot-action@v1`](https://github.com/Neocraft-tools/website-screenshot-action).
